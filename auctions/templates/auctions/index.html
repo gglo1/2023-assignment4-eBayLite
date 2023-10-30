@@ -9,5 +9,14 @@
     <section>Listing 2</section>
 
     <section>Listing 3</section>
+
+
+    {% if message is not None %}
+    {{message}}
+    {% endif %}
+    <section>
+        <a href="{% url 'auctions:index' %}"> Auctions</a>
+    </section>
+
 </article>
 {% endblock %}
