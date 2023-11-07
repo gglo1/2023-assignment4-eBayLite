@@ -4,19 +4,25 @@
 <h2>Active Listings</h2>
 
 <article>
-    <section>Listing 1</section>
-
-    <section>Listing 2</section>
-
-    <section>Listing 3</section>
-
-
     {% if message is not None %}
-    {{message}}
-    {% endif %}
-    <section>
-        <a href="{% url 'auctions:index' %}"> Auctions</a>
-    </section>
-
+        {{ message }}
+        <section>
+            <a href="{% url 'auctions:index' %}"> Auctions</a>
+        </section>        
+    {% else %}    
+        <ul>
+            {% for item in auction %}
+                {% if item.active %}
+                <li>
+                    <img src="{{ item.imageURL.url }}">
+                    <a href="{% url 'auctions:listing' item.id %}">{{ item.title }}:</a>
+                    <p>Price: {{ item.price }}</p>
+                    <p>Starting Bid: {{ item.starting_bid }}</p>
+                    <p>Category: {{ item.category }}</p>
+                </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    {% endif %}    
 </article>
 {% endblock %}

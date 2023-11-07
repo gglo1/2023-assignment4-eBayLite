@@ -1,13 +1,12 @@
-{% extends "auctions/layout.html" %}
+{% extends "auctions/layout.html" %} 
 
-{% block body %}
-    <h2>Categories</h2>
+{% block main %}
+<h1>Categories</h1>
+<ul>
+  {% for category in categories %}
+  <li>{{ category.name }}</li>
+  {% endfor %}
+</ul>
 
-    <form action="{% url 'category' %}" method="GET"> 
-        {% for category in categories %}
-        <div class="col-2 center">
-            <input class="category" type="submit" name="category" value="{{category}}"/>
-        </div>
-        {% endfor %}
-    </form>
+
 {% endblock %}

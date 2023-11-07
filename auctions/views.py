@@ -84,8 +84,12 @@ def categories(request):
  
 def listing_detail(request, id):
     item = get_object_or_404(Listing, id=id)
-    return render(request, 'auction/listing.html', {
+    user = request.user
+    in_watchlist = user.watchlist.filter(listing=item).exists()
+    
+    return render(request, 'auctions/listing.html', {
         'item': item,
+        'in_watchlist': in_watchlist,
     })
 
 
@@ -96,35 +100,35 @@ def create(request):
         if f.is_valid():
             title = f.cleaned_data['title']
             description = f.cleaned_data['description']
-            price = f.cleaned_data['price']
+            starting_bid = f.cleaned_data['starting_bid']
             category = f.cleaned_data['category']
             imageURL = f.cleaned_data['imageURL']
 
-            listing = Listing(user=request.user, title=title, description=description, price=price, category=category, imageURL=imageURL)
+            listing = Listing(user=request.user, title=title, description=description, starting_bid=starting_bid, category=category, imageURL=imageURL)
             listing.save() 
 
-            bid = Bid(user=request.user, listing=listing, bid=price)
+            bid = Bid(user=request.user, listing=listing, bid=starting_bid)
             bid.save()
             return HttpResponseRedirect(reverse('auctions:index'))
         else:
             message = "Form was invalid."
             f = AuctionForm()
-            return render(request, 'auction/create.html', {
+            return render(request, 'auctions/create.html', {
                 'form': f,
                 'message': message,
                 'categories': Category.objects.all()
             })
     else:
         f = AuctionForm()
-        return render(request, "auction/create.html", {
+        return render(request, "auctions/create.html", {
             'form': f
         })
 
 
 @login_required(login_url='auctions/login.html')
 def watchlist(request):
-    user_watchlist = request.user.watchlist.listing.all()
-    return render(request, "auction/watchlist.html", {
+    user_watchlist = request.user.watchlist.all()
+    return render(request, "auctions/watchlist.html", {
         'watchlist': user_watchlist
     })
 
@@ -146,10 +150,10 @@ def watchlistDelete(request, id):
 @login_required(login_url='auctions/login.html')
 def bid(request, id):
     auction = get_object_or_404(Listing, id=id)
-    price = request.POST['bid']
-    if price > get_object_or_404(Bid, id=id).bid:
-        bid = get_object_or_404(Bid, id=id)
-        bid.user = request.user
+    price = request.POST.get['bid']
+    bid = Bid.objects.filter(user=request.user, listing=auction).first()
+
+    if bid and price > bid.bid:
         bid.bid = price
         bid.save()
         auction.price = price

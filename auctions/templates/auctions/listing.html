@@ -1,19 +1,25 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
+{% if message is not None %}
+    {{ message }}
+    <section>
+        <a href="{% url 'auctions:index' %}"> Auctions</a>
+    </section>
+{% else %}
     <div class="container">
         <div class="col-md-8">
             <h2>{{ item.title }}</h2>
-            <p>{{ listing.description }}</p>
-            <p>Current Price: ${{ listing.current_price }}</p>
-            <p>Seller: {{ listing.seller.username }}</p>
-            <p>Category: {{ listing.category }}</p>
+            <p>{{ item.description }}</p>
+            <p>Current Price: ${{ item.current_price }}</p>
+            <p>Seller: {{ item.user.username }}</p>
+            <p>Category: {{ item.category }}</p>
 
-            {% if listing.image_url %}
-                <img src="{{ listing.imageURL }}" alt="{{ listing.title }}" class="img-fluid">
+            {% if item.imageURL %}
+                <img src="{{ item.imageURL }}" alt="{{ item.title }}" class="img-fluid">
             {% endif %}
 
-            <form method="post" action="{% url 'auctions:bid' listing.id %}">
+            <form method="post" action="{% url 'auctions:bid' item.id %}">
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="bid_amount">Place a Bid:</label>
@@ -23,9 +29,8 @@
             </form>
         </div>
         <div class="col-md-4">
-
             {% if user.is_authenticated %}
-            <form method="post" action="{% url 'auctions:watchlist' listing.id %}">
+            <form method="post" action="{% url 'auctions:watchlist' item.id %}">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-success">Add to Watchlist</button>
             </form>
@@ -33,10 +38,10 @@
 
             {% if in_watchlist %}
                 <p>This item is in your watchlist.</p>
-                {% else %}
+            {% else %}
                 <p>This item is not in your watchlist.</p>
             {% endif %}
-
         </div>
     </div>
+{% endif %}
 {% endblock %}

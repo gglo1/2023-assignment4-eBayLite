@@ -11,7 +11,7 @@ urlpatterns = [
     path("register/", views.register, name="register"),
     path("create/", views.create, name="create"),
     path("categories/", views.categories, name="categories"),
-    path("listing/<int:id>", views.listing_detail, name="listing_detail"),
+    path("listing/<int:id>", views.listing_detail, name="listing"), #had name=listing_detail instead of name=listing
     path("watchlist/", views.watchlist, name="watchlist"),
     path("watchlist/add/<int:id>", views.watchlistAdd, name="watchlistAdd"),
     path("watchlist/delete/<int:id>", views.watchlistDelete, name="watchlistDelete"),
