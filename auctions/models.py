@@ -26,14 +26,13 @@ class Listing(models.Model):
     def __str__(self):
         return f'{self.title}: made by {self.user.username}'
 
+# class Bid(models.Model):
+#     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='auctioner')
+#     listing = models.ForeignKey(Listing, on_delete=models.CASCADE)
+#     bid = models.DecimalField(max_digits=10, decimal_places=2)
 
-class Bid(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='auctioner')
-    listing = models.ForeignKey(Listing, on_delete=models.CASCADE)
-    bid = models.DecimalField(max_digits=10, decimal_places=2)
-
-    def __str__(self):
-        return f'{self.user.username} bids {self.bid} on {self.listing.title}'
+#     def __str__(self):
+#         return f'{self.user.username} bids {self.bid} on {self.listing.title}'
 
 
 class Comment(models.Model):

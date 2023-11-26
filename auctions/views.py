@@ -7,7 +7,7 @@ from django  import forms
 from django.contrib.auth.decorators import login_required
 
 
-from .models import User, Listing, Bid, Category, Comment, Watchlist
+from .models import User, Listing, Category, Comment, Watchlist
 
 
 class AuctionForm(forms.ModelForm):
@@ -21,7 +21,7 @@ class CommentForm(forms.ModelForm):
 
 def index(request):
     return render(request, "auctions/index.html", {
-        'auction': Listing.objects.all()
+        'auction': Listing.objects.filter(active=True)
     })
 
 
@@ -82,6 +82,13 @@ def categories(request):
         "categories": Category.objects.all()
     })
  
+def categorylistings(request, category_id):
+    listings = Listing.objects.filter(category_id=category_id, active=True)
+    return render(request, "auctions/categorylistings.html", {
+        'category': get_object_or_404(Category, id=category_id),
+        'listings': listings
+    })
+
 def listing_detail(request, id):
     item = get_object_or_404(Listing, id=id)
     user = request.user
@@ -92,8 +99,7 @@ def listing_detail(request, id):
         'in_watchlist': in_watchlist,
     })
 
-
-@login_required(login_url='auctions/login.html')
+@login_required(login_url='login')
 def create(request):
     if request.method == "POST":
         f = AuctionForm(request.POST)
@@ -107,12 +113,9 @@ def create(request):
             listing = Listing(user=request.user, title=title, description=description, starting_bid=starting_bid, category=category, imageURL=imageURL)
             listing.save() 
 
-            bid = Bid(user=request.user, listing=listing, bid=starting_bid)
-            bid.save()
             return HttpResponseRedirect(reverse('auctions:index'))
         else:
             message = "Form was invalid."
-            f = AuctionForm()
             return render(request, 'auctions/create.html', {
                 'form': f,
                 'message': message,
@@ -125,21 +128,25 @@ def create(request):
         })
 
 
-@login_required(login_url='auctions/login.html')
+@login_required(login_url='login')
 def watchlist(request):
-    user_watchlist = request.user.watchlist.all()
+    user_watchlist, created = Watchlist.objects.get_or_create(user=request.user)
+    listings = []
+    if not created:
+        listings = user_watchlist.listing.all()
     return render(request, "auctions/watchlist.html", {
-        'watchlist': user_watchlist
+        'watchlist': listings
     })
 
-@login_required(login_url='auctions/login.html')
+@login_required(login_url='login')
 def watchlistAdd(request, id): 
     listing = get_object_or_404(Listing, id=id)
-    request.user.watchlist.add(listing)
-    request.user.save()
+    watchlist, created = Watchlist.objects.get_or_create(user=request.user)
+    watchlist.listing.add(listing)
+    watchlist.save()
     return HttpResponseRedirect(reverse('auctions:watchlist'))
 
-@login_required(login_url='auctions/login.html')
+@login_required(login_url='login')
 def watchlistDelete(request, id): 
     listing = get_object_or_404(Listing, id=id)
     request.user.watchlist.remove(listing)
@@ -147,22 +154,23 @@ def watchlistDelete(request, id):
     return HttpResponseRedirect(reverse('auctions:watchlist'))
 
 
-@login_required(login_url='auctions/login.html')
+@login_required(login_url='login')
 def bid(request, id):
     auction = get_object_or_404(Listing, id=id)
-    price = request.POST.get['bid']
-    bid = Bid.objects.filter(user=request.user, listing=auction).first()
+    price = float(request.POST['bid_amount'])
+    #bid = Bid.objects.filter(user=request.user, listing=auction).first()
 
-    if bid and price > bid.bid:
-        bid.bid = price
-        bid.save()
+    #if not bid or price > bid.bid:
+    #    bid.bid = price
+    #   bid.save()
+    if price > auction.price:
         auction.price = price
         auction.save()
         return HttpResponseRedirect(reverse('auctions:index'))
     else:
         raise ValueError('Your bid is lower than the current highest bid.')
 
-@login_required(login_url='auctions/login.html')
+@login_required(login_url='login')
 def close_bid(request, id):
     auction = get_object_or_404(Listing, id=id)
     auction.active = False
@@ -171,7 +179,7 @@ def close_bid(request, id):
     return HttpResponseRedirect(reverse('auctions:listing_detail', args=(id,)))
 
 
-@login_required(login_url='auctions/login.html')
+@login_required(login_url='login')
 def comment(request, id):
     f = CommentForm(request.POST)
     if f.is_valid():
