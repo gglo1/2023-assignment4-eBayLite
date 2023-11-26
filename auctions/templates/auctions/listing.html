@@ -1,6 +1,6 @@
 {% extends "auctions/layout.html" %}
 
-{% block body %}
+{% block main %}
 {% if message is not None %}
     {{ message }}
     <section>
@@ -11,7 +11,7 @@
         <div class="col-md-8">
             <h2>{{ item.title }}</h2>
             <p>{{ item.description }}</p>
-            <p>Current Price: ${{ item.current_price }}</p>
+            <p>Current Price: ${{ item.price }}</p>
             <p>Seller: {{ item.user.username }}</p>
             <p>Category: {{ item.category }}</p>
 
@@ -30,7 +30,7 @@
         </div>
         <div class="col-md-4">
             {% if user.is_authenticated %}
-            <form method="post" action="{% url 'auctions:watchlist' item.id %}">
+            <form method="post" action="{% url 'auctions:watchlistAdd' item.id %}">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-success">Add to Watchlist</button>
             </form>
